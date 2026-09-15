@@ -283,11 +283,12 @@ function startRec(){
   recognition.onstart=function(){document.getElementById('recStatus').textContent='Microphone active — speak now';};
   recognition.onresult=function(e){
     var finalText='',interim='';
-    for(var i=0;i<e.results.length;i++){
-      if(e.results[i].isFinal)finalText+=e.results[i][0].transcript+' ';
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)persistedSpokenText+=e.results[i][0].transcript+' ';
       else interim+=e.results[i][0].transcript;
     }
-    spokenText=(persistedSpokenText+' '+finalText).replace(/\s+/g,' ').trim();
+    if(persistedSpokenText.length>2000)persistedSpokenText=persistedSpokenText.slice(0,2000);
+    spokenText=(persistedSpokenText+' '+interim).replace(/\s+/g,' ').trim();
     var tb=document.getElementById('transcriptBox');
     if(tb){tb.textContent=(spokenText+' '+interim).replace(/\s+/g,' ').trim()||'Listening...';tb.style.display='block';tb.style.visibility='visible';tb.classList.remove('hidden');}
   };
@@ -315,7 +316,6 @@ function startRec(){
     }
   };
   recognition.onend=function(){
-    if(spokenText)persistedSpokenText=spokenText;
     if(isRec && !fatalError){try{recognition.start();}catch(err){}}
   };
   try{recognition.start();}catch(e){
